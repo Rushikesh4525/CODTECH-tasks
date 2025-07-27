@@ -1,0 +1,68 @@
+import java.io.*;
+import java.net.*;
+
+public class ChatClient {
+    public static void main(String[] args) {
+        String hostname = "localhost";
+        int port = 1234;
+
+        try (Socket socket = new Socket(hostname, port)) {
+            new ReadThread(socket).start();
+            new WriteThread(socket).start();
+        } catch (IOException ex) {
+            System.out.println("Error connecting to server: " + ex.getMessage());
+        }
+    }
+}
+
+class ReadThread extends Thread {
+    private BufferedReader reader;
+
+    public ReadThread(Socket socket) {
+        try {
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void run() {
+        while (true) {
+            try {
+                String response = reader.readLine();
+                if (response != null) {
+                    System.out.println("\n" + response);
+                    System.out.print("> ");
+                }
+            } catch (IOException ex) {
+                break;
+            }
+        }
+    }
+}
+
+class WriteThread extends Thread {
+    private PrintWriter writer;
+    private BufferedReader console;
+
+    public WriteThread(Socket socket) {
+        try {
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            console = new BufferedReader(new InputStreamReader(System.in));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void run() {
+        try {
+            while (true) {
+                System.out.print("> ");
+                String text = console.readLine();
+                writer.println(text);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+}
