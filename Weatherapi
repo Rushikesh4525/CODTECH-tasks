@@ -1,0 +1,43 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
+
+public class WeatherClient {
+
+    // Replace with your OpenWeatherMap API Key
+    private static final String API_KEY = "YOUR_API_KEY_HERE";
+    private static final String BASE_URL = "http://api.openweathermap.org/data/2.5/weather";
+
+    public static void main(String[] args) {
+        String city = "Mumbai"; // You can change this or get user input
+
+        try {
+            // Form the full URL
+            String urlString = BASE_URL + "?q=" + city + "&appid=" + API_KEY + "&units=metric";
+
+            // Create URL and open connection
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+
+            // Read the response
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            StringBuilder jsonResponse = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                jsonResponse.append(inputLine);
+            }
+            in.close();
+
+            // Parse JSON
+            JSONObject obj = new JSONObject(jsonResponse.toString());
+
+            String cityName = obj.getString("name");
+            JSONObject main = obj.getJSONObject("main");
+            double temp = main.getDouble("temp");
+            double feelsLike = main.getDouble("feels_like");
+            int humidity = main.getInt(
